@@ -25,6 +25,7 @@ const theme = {
   },
 };
 
+
 const AppBar = (props) => <Header background="brand" {...props} />;
 
 class App extends Component {
