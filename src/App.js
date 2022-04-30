@@ -14,7 +14,8 @@ import {
   Sidebar,
   Text,
   TextInput,
-} from 'grommet';
+  grommet
+} from "grommet";
 import {
   Add,
   Cloud,
@@ -30,40 +31,86 @@ import {
   Layer as IconLayer,
   Note,
   Paint,
-  Projects,
-} from 'grommet-icons';
-import React, { Component } from 'react';
+  Projects
+} from "grommet-icons";
+import { hpe } from "grommet-theme-hpe";
 
-import Cytoscape from 'cytoscape';
-import COSEBilkent from 'cytoscape-cose-bilkent';
+import React, { Component } from "react";
 
-import CytoscapeComponent from 'react-cytoscapejs';
+import Cytoscape from "cytoscape";
+import COSEBilkent from "cytoscape-cose-bilkent";
+
+import CytoscapeComponent from "react-cytoscapejs";
 
 Cytoscape.use(COSEBilkent);
 
-const theme = {
-  global: {
-    font: {
-      family: 'Roboto',
-      size: '14px',
-      height: '16px',
-    },
-  },
-};
+class NodeEdgeDiagram extends React.Component {
+  buildStylesheet() {
+    for (const status of this.props.diag_status) {
+      this.cy
+        .style()
+        .selector('node[status = "' + status.state + '"]')
+        .style({
+          "background-color": status.bg,
+          "border-color": status.text,
+          color: status.text
+        })
+        .update();
+    }
 
-const NodeEdgeDiagram = (props) => (
-  <CytoscapeComponent
-    elements={props.elements}
-    style={{ width: '100%', height: '100%' }}
-    layout={props.layout}
-  />
-);
+    for (const shape of this.props.diag_shapes) {
+      this.cy
+        .style()
+        .selector('node[type = "' + shape.type + '"]')
+        .style({
+          shape: shape.cy_shape
+        })
+        .update();
+    }
+  }
+
+  componentDidMount() {}
+
+  render() {
+    return (
+      <CytoscapeComponent
+        elements={this.props.elements}
+        style={{ width: "100%", height: "100%" }}
+        layout={this.props.layout}
+        stylesheet={[
+          {
+            selector: "node",
+            style: {
+              "background-color": "white",
+              label: "data(label)",
+              shape: "rectangle",
+              width: "80px",
+              height: "40px",
+              "font-size": "10px",
+              "text-valign": "top",
+              "text-margin-y": "12px",
+              "border-width": 1,
+              "border-style": "solid",
+              "border-color": "black"
+            }
+          }
+        ]}
+        maxZoom={2}
+        minZoom={0.5}
+        cy={(cy) => {
+          this.cy = cy;
+          this.buildStylesheet();
+        }}
+      />
+    );
+  }
+}
 
 const AppBar = (props) => (
   <Header
     background="brand"
     elevation="large"
-    style={{ zIndex: '1' }}
+    style={{ zIndex: "1" }}
     {...props}
   />
 );
@@ -88,27 +135,27 @@ class DiagColorTable extends React.Component {
       <DataTable
         columns={[
           {
-            property: 'status',
+            property: "state",
             header: <Text>Status</Text>,
             primary: true,
-            size: 'xsmall',
+            size: "xsmall",
             render: (status) => (
               <Box>
                 <TextInput
-                  value={status.status}
+                  value={status.state}
                   style={{
                     color: [status.text],
                     background: [status.bg],
-                    borderColor: [status.text],
+                    borderColor: [status.text]
                   }}
                 />
               </Box>
-            ),
+            )
           },
           {
-            property: 'bg',
-            header: 'Background',
-            size: 'small',
+            property: "bg",
+            header: "Background",
+            size: "small",
             render: (status) => (
               <Box>
                 <TextInput
@@ -117,12 +164,12 @@ class DiagColorTable extends React.Component {
                   style={{ background: [status.bg], borderColor: [status.bg] }}
                 />
               </Box>
-            ),
+            )
           },
           {
-            property: 'text',
-            header: 'Text',
-            size: 'small',
+            property: "text",
+            header: "Text",
+            size: "small",
             render: (status) => (
               <Box>
                 <TextInput
@@ -130,10 +177,10 @@ class DiagColorTable extends React.Component {
                   style={{ color: [status.text], borderColor: [status.text] }}
                 />
               </Box>
-            ),
-          },
+            )
+          }
         ]}
-        data={this.props.diag_colors}
+        data={this.props.diag_status}
       />
     );
   }
@@ -146,18 +193,18 @@ class DiagColors extends React.Component {
         {this.props.diag_colors.map((color) => (
           <Box direction="row">
             <FormField
-              name={'bg_' + color.type}
-              htmlFor={'bg_input' + color.type}
-              label={'background: ' + color.type}
+              name={"bg_" + color.type}
+              htmlFor={"bg_input" + color.type}
+              label={"background: " + color.type}
             >
-              <TextInput id={'bg_input' + color.type} value={color.bg} />
+              <TextInput id={"bg_input" + color.type} value={color.bg} />
             </FormField>
             <FormField
-              name={'text_' + color.type}
-              htmlFor={'text_input' + color.type}
-              label={'text: ' + color.type}
+              name={"text_" + color.type}
+              htmlFor={"text_input" + color.type}
+              label={"text: " + color.type}
             >
-              <TextInput id={'text_input' + color.type} value={color.text} />
+              <TextInput id={"text_input" + color.type} value={color.text} />
             </FormField>
           </Box>
         ))}
@@ -166,22 +213,41 @@ class DiagColors extends React.Component {
   }
 }
 
+const TipContent = ({ message }) => (
+  <Box direction="row" align="center">
+    <svg viewBox="0 0 22 22" version="1.1" width="22px" height="22px">
+      <polygon
+        fill="lightgrey"
+        points="6 2 18 12 6 22"
+        transform="matrix(-1 0 0 1 30 0)"
+      />
+    </svg>
+    <Box background="lightgrey" direction="row" pad="xsmall" round="xsmall">
+      <Text color="black">{message}</Text>
+    </Box>
+  </Box>
+);
+
 const diag_status_defaults = [
-  { status: 'unchanged', bg: 'PaleGreen', text: 'Green' },
-  { status: 'config', bg: 'LightYellow', text: 'Orange' },
-  { status: 'modified', bg: 'Khaki', text: 'DarkOrange' },
-  { status: 'new', bg: 'LightSalmon', text: 'DarkRed' },
-  { status: 'decomm', bg: 'LightBlue', text: 'Blue' },
+  { state: "unchanged", bg: "PaleGreen", text: "Green" },
+  { state: "config", bg: "LightYellow", text: "Orange" },
+  { state: "modified", bg: "Khaki", text: "DarkOrange" },
+  { state: "new", bg: "LightSalmon", text: "DarkRed" },
+  { state: "decomm", bg: "LightBlue", text: "Blue" }
 ];
 
 const diag_shape_defaults = [
-  { shape: 'component', icon: <IconLayer /> },
-  { shape: 'node', icon: <Cube /> },
-  { shape: 'database', icon: <DocumentStore /> },
-  { shape: 'frame', icon: <Note /> },
-  { shape: 'file', icon: <Document /> },
-  { shape: 'cloud', icon: <Cloud /> },
-  { shape: 'folder', icon: <Folder /> },
+  { type: "component", icon: <IconLayer />, cy_shape: "round-rectangle" },
+  { type: "node", icon: <Cube />, cy_shape: "bottom-round-rectangle" },
+  {
+    type: "database",
+    icon: <DocumentStore />,
+    cy_shape: "barrel"
+  },
+  { type: "frame", icon: <Note />, cy_shape: "concave-hexagon" },
+  { type: "file", icon: <Document />, cy_shape: "round-tag" },
+  { type: "cloud", icon: <Cloud />, cy_shape: "round-octagon" },
+  { type: "folder", icon: <Folder />, cy_shape: "round-pentagon" }
 ];
 
 class App extends Component {
@@ -190,25 +256,85 @@ class App extends Component {
     showConfig: false,
     showColorConfig: false,
     showTypeConfig: false,
-    diag_colors: diag_status_defaults,
-    diag_types: diag_shape_defaults,
+    diag_status: diag_status_defaults,
+    diag_shapes: diag_shape_defaults,
     elements: [
-      { data: { id: 'one', label: 'Node 1' }, position: { x: 0, y: 0 } },
-      { data: { id: 'two', label: 'Node 2' }, position: { x: 100, y: 0 } },
       {
         data: {
-          source: 'one',
-          target: 'two',
-          label: 'Edge from Node1 to Node2',
-        },
+          id: "one",
+          label: "Node 1",
+          type: "folder",
+          status: "decomm"
+        }
       },
-    ],
+      {
+        data: {
+          id: "two",
+          label: "Node 2",
+          type: "database",
+          status: "modified"
+        }
+      },
+      {
+        data: {
+          id: "three",
+          label: "Node 3",
+          type: "component",
+          status: "config"
+        }
+      },
+      {
+        data: {
+          id: "four",
+          label: "Node 4",
+          type: "frame",
+          parent: "three",
+          status: "unchanged"
+        }
+      },
+      {
+        data: {
+          id: "five",
+          label: "Node 5",
+          type: "node",
+          status: "new"
+        }
+      },
+      {
+        data: {
+          source: "one",
+          target: "two",
+          label: "Edge from Node1 to Node2"
+        }
+      },
+      {
+        data: {
+          source: "four",
+          target: "one",
+          label: "Edge from Node1 to Node2"
+        }
+      },
+      {
+        data: {
+          source: "two",
+          target: "five",
+          label: "Edge from Node1 to Node2"
+        }
+      },
+      {
+        data: {
+          source: "five",
+          target: "three",
+          label: "Edge from Node1 to Node2"
+        }
+      }
+    ]
   };
 
   render() {
-    const layout = { name: 'cose-bilkent' };
+    const layout = { name: "cose-bilkent" };
     return (
-      <Grommet theme={theme} full>
+      <Grommet theme={grommet} full>
         <ResponsiveContext.Consumer>
           {(size) => (
             <Box fill>
@@ -222,13 +348,13 @@ class App extends Component {
                     }
                     active={this.state.showConfig}
                   />
-                  <Menu label="File" items={[{ label: 'new' }]} />
+                  <Menu label="File" items={[{ label: "new" }]} />
                   <Box direction="row">
                     <Menu
                       label="Diagram"
                       items={[
-                        { label: 'add component' },
-                        { label: 'add connection' },
+                        { label: "add component" },
+                        { label: "add connection" }
                       ]}
                     />
                   </Box>
@@ -242,13 +368,13 @@ class App extends Component {
                   />
                 </Nav>
               </AppBar>
-              <Box direction="row" flex overflow={{ horizontal: 'hidden' }}>
+              <Box direction="row" flex overflow={{ horizontal: "hidden" }}>
                 <Collapsible
                   direction="horizontal"
                   open={this.state.showConfig}
                 >
                   <Sidebar
-                    background="neutral-2"
+                    background="neutral-1"
                     footer={<Button icon={<Help />} hoverIndicator />}
                     pad="none"
                     elevation="medium"
@@ -260,7 +386,7 @@ class App extends Component {
                         onClick={() =>
                           this.setState({
                             showColorConfig: !this.state.showColorConfig,
-                            showTypeConfig: false,
+                            showTypeConfig: false
                           })
                         }
                         active={this.state.showColorConfig}
@@ -271,7 +397,7 @@ class App extends Component {
                         onClick={() =>
                           this.setState({
                             showTypeConfig: !this.state.showTypeConfig,
-                            showColorConfig: false,
+                            showColorConfig: false
                           })
                         }
                         active={this.state.showTypeConfig}
@@ -283,20 +409,23 @@ class App extends Component {
                   direction="horizontal"
                   open={this.state.showColorConfig && this.state.showConfig}
                 >
-                  <Sidebar background="light-6" pad="none">
+                  <Sidebar background="light-5" pad="none">
                     <Nav gap="small">
-                      {this.state.diag_colors.map((status) => (
+                      {this.state.diag_status.map((status) => (
                         <Button
                           hoverIndicator
                           icon={<Edit color={status.text} />}
                           tip={{
-                            dropProps: { align: { left: 'right' } },
-                            content: 'edit ' + [status.status],
+                            dropProps: { align: { left: "right" } },
+                            content: (
+                              <TipContent message={"edit " + [status.state]} />
+                            ),
+                            plain: true
                           }}
                           style={{
                             color: [status.text],
                             background: [status.bg],
-                            borderColor: [status.text],
+                            borderColor: [status.text]
                           }}
                         />
                       ))}
@@ -304,8 +433,9 @@ class App extends Component {
                         hoverIndicator
                         icon={<Add />}
                         tip={{
-                          dropProps: { align: { left: 'right' } },
-                          content: 'add new status',
+                          dropProps: { align: { left: "right" } },
+                          content: <TipContent message="add new state" />,
+                          plain: true
                         }}
                       />
                     </Nav>
@@ -317,13 +447,16 @@ class App extends Component {
                 >
                   <Sidebar background="neutral-4" pad="none">
                     <Nav gap="small">
-                      {this.state.diag_types.map((shape) => (
+                      {this.state.diag_shapes.map((shape) => (
                         <Button
                           hoverIndicator
                           icon={shape.icon}
                           tip={{
-                            dropProps: { align: { left: 'right' } },
-                            content: 'edit ' + [shape.shape],
+                            dropProps: { align: { left: "right" } },
+                            content: (
+                              <TipContent message={"edit " + [shape.type]} />
+                            ),
+                            plain: true
                           }}
                         />
                       ))}
@@ -331,8 +464,9 @@ class App extends Component {
                         hoverIndicator
                         icon={<Add />}
                         tip={{
-                          dropProps: { align: { left: 'right' } },
-                          content: 'add new shape',
+                          dropProps: { align: { left: "right" } },
+                          content: <TipContent message="add new type" />,
+                          plain: true
                         }}
                       />
                     </Nav>
@@ -342,9 +476,11 @@ class App extends Component {
                   <NodeEdgeDiagram
                     elements={this.state.elements}
                     layout={layout}
+                    diag_status={this.state.diag_status}
+                    diag_shapes={this.state.diag_shapes}
                   />
                 </Box>
-                {!this.state.showSidebar || size !== 'small' ? (
+                {!this.state.showSidebar || size !== "small" ? (
                   <Collapsible
                     direction="horizontal"
                     open={this.state.showSidebar}
@@ -357,7 +493,7 @@ class App extends Component {
                       align="center"
                       justify="center"
                     >
-                      <DiagColorTable diag_colors={this.state.diag_colors} />
+                      <DiagColorTable diag_status={this.state.diag_status} />
                     </Box>
                   </Collapsible>
                 ) : (
@@ -381,7 +517,7 @@ class App extends Component {
                       align="center"
                       justify="center"
                     >
-                      <DiagColors diag_colors={this.state.diag_colors} />
+                      <DiagColors diag_colors={this.state.diag_status} />
                     </Box>
                   </Layer>
                 )}
